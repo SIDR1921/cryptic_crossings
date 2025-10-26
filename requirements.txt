@@ -1,0 +1,11 @@
+# Core dependencies (required)
+# Tkinter is included with Python standard library
+
+# Optional dependencies for enhanced features
+# Sound effects - the game will work without these
+pygame>=2.0.0
+numpy>=1.20.0
+
+# Note: If you don't want sound effects, you can install with:
+# pip install --no-deps cryptic-crossings
+# The game will automatically detect their absence and run silently
