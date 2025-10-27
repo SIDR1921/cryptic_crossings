@@ -189,8 +189,8 @@ class CrypticCrossingsGame:
                 if len(content) > 1:
                     var.set(content[:1])
                     return
-                # Then update the guess
-                self.update_guess(letter, var)
+                # Schedule the guess update to avoid interference with text replacement
+                self.master.after_idle(lambda: self.update_guess(letter, var))
             var.trace_add('write', on_input_change)
             
             frame = tk.Frame(self.input_frame, bg='#e0f7fa')

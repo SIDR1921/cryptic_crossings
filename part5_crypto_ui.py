@@ -235,7 +235,8 @@ class CryptarithmeticUI:
             
             # Input field with validation
             var = tk.StringVar(self.main_frame)
-            var.trace_add('write', lambda name, index, mode, l=letter, v=var: self._on_input_change(l, v))
+            var.trace_add('write', lambda name, index, mode, l=letter, v=var: 
+                         self.main_frame.after_idle(lambda: self._on_input_change(l, v)))
             
             entry = tk.Entry(
                 letter_frame,
