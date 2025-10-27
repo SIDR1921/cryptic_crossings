@@ -182,15 +182,49 @@ class CrypticCrossingsGame:
         
         for letter in level_data['unique_letters']:
             var = tk.StringVar(self.master)
-            # Combined callback that handles both input limiting and guess updating
+            # Simple, robust callback for input changes
             def on_input_change(name, index, mode, letter=letter, var=var):
                 content = var.get()
-                # First limit the input length
+                print(f"DEBUG: {letter} changed to '{content}' (len={len(content)})")
+                
+                # Limit to 1 character
                 if len(content) > 1:
-                    var.set(content[:1])
-                    return
-                # Schedule the guess update to avoid interference with text replacement
-                self.master.after_idle(lambda: self.update_guess(letter, var))
+                    var.set(content[-1])  # Keep the last character typed
+                    content = var.get()
+                
+                # Update the guess immediately
+                if content == "":
+                    # Deletion case
+                    if letter in self.state['current_guess']:
+                        del self.state['current_guess'][letter]
+                        print(f"DEBUG: Deleted {letter} from guess")
+                    self.feedback_label.config(text="", fg='gray')
+                elif content.isdigit():
+                    # Valid digit case
+                    digit = int(content)
+                    # Check for duplicates
+                    duplicate_found = False
+                    for l, d in self.state['current_guess'].items():
+                        if d == digit and l != letter:
+                            self.feedback_label.config(text=f"Error: {digit} is already assigned to {l}.", fg='red')
+                            var.set("")
+                            if letter in self.state['current_guess']:
+                                del self.state['current_guess'][letter]
+                            duplicate_found = True
+                            break
+                    
+                    if not duplicate_found:
+                        self.state['current_guess'][letter] = digit
+                        self.feedback_label.config(text="", fg='gray')
+                        print(f"DEBUG: Set {letter} = {digit}")
+                else:
+                    # Invalid input case
+                    var.set("")
+                    if letter in self.state['current_guess']:
+                        del self.state['current_guess'][letter]
+                
+                print(f"DEBUG: Current guess: {self.state['current_guess']}")
+            
             var.trace_add('write', on_input_change)
             
             frame = tk.Frame(self.input_frame, bg='#e0f7fa')

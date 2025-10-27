@@ -235,8 +235,39 @@ class CryptarithmeticUI:
             
             # Input field with validation
             var = tk.StringVar(self.main_frame)
-            var.trace_add('write', lambda name, index, mode, l=letter, v=var: 
-                         self.main_frame.after_idle(lambda: self._on_input_change(l, v)))
+            # Simple, direct callback for input changes
+            def on_input_change(name, index, mode, letter=letter, var=var):
+                content = var.get()
+                
+                # Limit to 1 character
+                if len(content) > 1:
+                    var.set(content[-1])  # Keep the last character typed
+                    content = var.get()
+                
+                # Update the guess
+                if content == "":
+                    # Deletion case
+                    self.current_guess.pop(letter, None)
+                    self._update_ui_state()
+                elif content.isdigit():
+                    # Valid digit case
+                    digit = int(content)
+                    # Check for duplicates
+                    duplicate_letter = self._find_duplicate_assignment(digit, letter)
+                    if duplicate_letter:
+                        self._show_feedback(f"Error: {digit} is already assigned to {duplicate_letter}.", 'error')
+                        var.set("")
+                        self.current_guess.pop(letter, None)
+                    else:
+                        self.current_guess[letter] = digit
+                        self._update_ui_state()
+                else:
+                    # Invalid input case
+                    var.set("")
+                    self.current_guess.pop(letter, None)
+                    self._update_ui_state()
+            
+            var.trace_add('write', on_input_change)
             
             entry = tk.Entry(
                 letter_frame,
