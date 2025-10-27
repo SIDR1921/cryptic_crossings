@@ -298,39 +298,6 @@ class CryptarithmeticUI:
         elif not event.char.isdigit() and event.char not in ['\\b', '\\x7f']:  # Allow backspace/delete
             return "break"  # Block non-digit characters
     
-    def _on_input_change(self, letter: str, var: tk.StringVar):
-        """Handle input field changes with validation."""
-        value = var.get()
-        
-        # Remove any non-digit characters
-        cleaned_value = ''.join(c for c in value if c.isdigit())
-        if cleaned_value != value:
-            var.set(cleaned_value)
-            return
-        
-        # Limit to single digit
-        if len(cleaned_value) > 1:
-            var.set(cleaned_value[0])
-            return
-        
-        # Update internal state
-        if cleaned_value:
-            digit = int(cleaned_value)
-            
-            # Check for duplicates
-            duplicate_letter = self._find_duplicate_assignment(digit, letter)
-            if duplicate_letter:
-                self._show_feedback(f"Error: {digit} is already assigned to {duplicate_letter}.", 'error')
-                var.set("")
-                self.current_guess.pop(letter, None)
-                return
-            
-            self.current_guess[letter] = digit
-        else:
-            self.current_guess.pop(letter, None)
-        
-        self._update_ui_state()
-    
     def _find_duplicate_assignment(self, digit: int, exclude_letter: str) -> Optional[str]:
         """Find if a digit is already assigned to another letter."""
         for letter, assigned_digit in self.current_guess.items():

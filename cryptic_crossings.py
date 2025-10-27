@@ -242,35 +242,6 @@ class CrypticCrossingsGame:
         self.error_display.config(state='readonly')
         self.master.update_idletasks()
 
-    def update_guess(self, letter, var):
-        """Callback to update the internal state when an entry changes."""
-        value = var.get()
-        
-        # Handle empty string (deletion)
-        if value == "":
-            self.state['current_guess'].pop(letter, None)
-            self.feedback_label.config(text="", fg='gray')
-            return
-            
-        # Handle valid digit input
-        if value.isdigit() and 0 <= int(value) <= 9:
-            digit = int(value)
-            
-            # Check for duplicate assignment
-            for l, d in self.state['current_guess'].items():
-                if d == digit and l != letter:
-                    self.feedback_label.config(text=f"Error: {digit} is already assigned to {l}.", fg='red')
-                    var.set("")
-                    self.state['current_guess'].pop(letter, None)
-                    return
-
-            self.state['current_guess'][letter] = digit
-            self.feedback_label.config(text="", fg='gray')
-        else:
-            # Handle invalid input (non-digit or out of range)
-            var.set("")
-            self.state['current_guess'].pop(letter, None)
-
     def solve_puzzle(self):
         """Handles the solve button click and locks/unlocks the M&C game."""
         guess_map = self.state['current_guess']
