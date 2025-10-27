@@ -11,7 +11,7 @@ import tkinter as tk
 from tkinter import messagebox
 import random
 import time
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Callable
 
 # Try to import sound libraries
 try:
@@ -98,9 +98,10 @@ class SoundManager:
 class RiverCrossingUI:
     """Manages the river crossing visualization and interactions."""
     
-    def __init__(self, parent_frame: tk.Frame, sound_manager: SoundManager):
+    def __init__(self, parent_frame: tk.Frame, sound_manager: SoundManager, on_complete_callback: Callable[[], None] = None):
         self.parent_frame = parent_frame
         self.sound_manager = sound_manager
+        self.on_complete_callback = on_complete_callback
         
         # UI Components
         self.main_frame = None
@@ -473,6 +474,9 @@ class RiverCrossingUI:
         if game_status['is_game_over']:
             if game_status['is_won']:
                 self.sound_manager.play('success')
+                # Notify parent controller of completion
+                if self.on_complete_callback:
+                    self.on_complete_callback()
                 return True  # Signal win to parent controller
             else:
                 self.sound_manager.play('fail')
@@ -563,7 +567,7 @@ class CrypticCrossingsGame:
         self.crypto_ui = CryptarithmeticUI(self.main_frame, self._on_crypto_solution)
         
         # Create river UI (right panel)
-        self.river_ui = RiverCrossingUI(self.main_frame, self.sound_manager)
+        self.river_ui = RiverCrossingUI(self.main_frame, self.sound_manager, self._on_river_complete)
     
     def _on_crypto_solution(self, is_valid: bool):
         """Handle cryptarithmetic solution callback."""

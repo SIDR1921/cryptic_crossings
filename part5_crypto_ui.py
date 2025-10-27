@@ -41,6 +41,7 @@ class CryptarithmeticUI:
         self.solve_button = None
         self.hint_button = None
         self.hint_display = None
+        self.prev_button = None
         
         self._create_ui()
     
@@ -117,6 +118,21 @@ class CryptarithmeticUI:
             relief=tk.RAISED
         )
         self.hint_button.pack(fill=tk.X)
+        
+        # Navigation buttons frame
+        nav_frame = tk.Frame(self.main_frame, bg=COLORS['crypto_bg'])
+        nav_frame.pack(pady=(0, 10))
+
+        self.prev_button = tk.Button(
+            nav_frame,
+            text="← Previous Level",
+            font=(LAYOUT['font_family'], 10, "bold"),
+            bg=COLORS['button_bg'],
+            fg=COLORS['button_fg'],
+            relief=tk.RAISED,
+            command=self._go_to_previous_level
+        )
+        self.prev_button.pack(side=tk.LEFT, padx=5)
         
         # Error display
         self.error_display = tk.Text(
@@ -281,7 +297,6 @@ class CryptarithmeticUI:
             
             # Bind additional events
             entry.bind('<FocusIn>', lambda e, l=letter: self._on_entry_focus(l))
-            entry.bind('<KeyPress>', lambda e, v=var: self._limit_input(e, v))
             
             self.guess_entries[letter] = var
             
@@ -290,13 +305,8 @@ class CryptarithmeticUI:
             if current_col >= letters_per_row:
                 current_col = 0
                 current_row += 1
-    
-    def _limit_input(self, event, var):
-        """Limit input to single digits."""
-        if event.char.isdigit() and len(var.get()) >= 1:
-            return "break"  # Prevent further input
-        elif not event.char.isdigit() and event.char not in ['\\b', '\\x7f']:  # Allow backspace/delete
-            return "break"  # Block non-digit characters
+        
+        self._update_nav_buttons()
     
     def _find_duplicate_assignment(self, digit: int, exclude_letter: str) -> Optional[str]:
         """Find if a digit is already assigned to another letter."""
@@ -326,6 +336,7 @@ class CryptarithmeticUI:
             self.on_solution_callback(False)
         
         self._update_ui_state()
+        self._update_nav_buttons()
     
     def _show_hints(self):
         """Display hints for the current puzzle state."""
@@ -397,6 +408,23 @@ class CryptarithmeticUI:
         # Update feedback if all letters are assigned
         if all_assigned and not self.feedback_label.cget('text').startswith(('Solution', 'Error:')):
             self._show_feedback("All letters assigned. Click 'Verify Solution'!", 'info')
+    
+    def _go_to_previous_level(self):
+        if self.current_level_index > 0:
+            self.current_level_index -= 1
+            self.current_guess = {}
+            self._create_input_fields()
+            self._update_ui_state()
+            self._clear_feedback()
+            self._clear_error_display()
+        self._update_nav_buttons()
+    
+    def _update_nav_buttons(self):
+        if hasattr(self, 'prev_button'):
+            if self.current_level_index == 0:
+                self.prev_button.config(state=tk.DISABLED)
+            else:
+                self.prev_button.config(state=tk.NORMAL)
     
     def get_current_solution(self) -> Dict[str, int]:
         """Get the current user solution."""

@@ -29,7 +29,9 @@ COLORS = {
     'warning_yellow': '#fffbe3',
     'text_dark': '#333333',
     'text_blue': '#1e40af',
-    'text_gray': '#374151'
+    'text_gray': '#374151',
+    'button_bg': '#2563eb',  # blue-600
+    'button_fg': '#fff'      # white
 }
 
 # Character icons
