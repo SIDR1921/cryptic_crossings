@@ -182,12 +182,16 @@ class CrypticCrossingsGame:
         
         for letter in level_data['unique_letters']:
             var = tk.StringVar(self.master)
-            def limit_input(var, index, mode, max_length=1):
+            # Combined callback that handles both input limiting and guess updating
+            def on_input_change(name, index, mode, letter=letter, var=var):
                 content = var.get()
-                if len(content) > max_length:
-                    var.set(content[:max_length])
-            var.trace_add('write', limit_input)
-            var.trace_add('write', lambda name, index, mode, l=letter, v=var: self.update_guess(l, v))
+                # First limit the input length
+                if len(content) > 1:
+                    var.set(content[:1])
+                    return
+                # Then update the guess
+                self.update_guess(letter, var)
+            var.trace_add('write', on_input_change)
             
             frame = tk.Frame(self.input_frame, bg='#e0f7fa')
             frame.pack(side=tk.LEFT, padx=5, pady=5)
@@ -207,9 +211,18 @@ class CrypticCrossingsGame:
     def update_guess(self, letter, var):
         """Callback to update the internal state when an entry changes."""
         value = var.get()
+        
+        # Handle empty string (deletion)
+        if value == "":
+            self.state['current_guess'].pop(letter, None)
+            self.feedback_label.config(text="", fg='gray')
+            return
+            
+        # Handle valid digit input
         if value.isdigit() and 0 <= int(value) <= 9:
             digit = int(value)
             
+            # Check for duplicate assignment
             for l, d in self.state['current_guess'].items():
                 if d == digit and l != letter:
                     self.feedback_label.config(text=f"Error: {digit} is already assigned to {l}.", fg='red')
@@ -220,6 +233,8 @@ class CrypticCrossingsGame:
             self.state['current_guess'][letter] = digit
             self.feedback_label.config(text="", fg='gray')
         else:
+            # Handle invalid input (non-digit or out of range)
+            var.set("")
             self.state['current_guess'].pop(letter, None)
 
     def solve_puzzle(self):
